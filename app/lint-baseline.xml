@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.13.0" type="baseline" client="gradle" dependencies="false" name="AGP (8.13.0)" variant="all" version="8.13.0">
+
+    <issue
+        id="MockLocation"
+        message="Mock locations should only be requested in a test or debug-specific manifest file (typically `src/debug/AndroidManifest.xml`)"
+        errorLine1="    &lt;uses-permission android:name=&quot;android.permission.ACCESS_MOCK_LOCATION&quot;"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/debug/AndroidManifest.xml"
+            line="5"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="ScopedStorage"
+        message="READ_EXTERNAL_STORAGE is deprecated (and is not granted) when targeting Android 13+. If you need to query or interact with MediaStore or media files on the shared storage, you should instead use one or more new storage permissions: `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO` or `READ_MEDIA_AUDIO`."
+        errorLine1="    &lt;uses-permission android:name=&quot;android.permission.READ_EXTERNAL_STORAGE&quot; />"
+        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="4"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="InlinedApi"
+        message="Field requires API level 31 (current min is 26): `android.location.provider.ProviderProperties#ACCURACY_FINE`"
+        errorLine1="                true, true, true, ProviderProperties.POWER_USAGE_LOW, ProviderProperties.ACCURACY_FINE"
+        errorLine2="                                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/services/MockLocationService.kt"
+            line="42"
+            column="71"/>
+    </issue>
+
+    <issue
+        id="InlinedApi"
+        message="Field requires API level 31 (current min is 26): `android.location.provider.ProviderProperties#POWER_USAGE_LOW`"
+        errorLine1="                true, true, true, ProviderProperties.POWER_USAGE_LOW, ProviderProperties.ACCURACY_FINE"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/services/MockLocationService.kt"
+            line="42"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="UnspecifiedRegisterReceiverFlag"
+        message="`locationUpdateReceiver` is missing `RECEIVER_EXPORTED` or `RECEIVER_NOT_EXPORTED` flag for unprotected broadcasts registered for com.dwinkley.walksim.ACTION_LOCATION_UPDATE"
+        errorLine1="            registerReceiver(locationUpdateReceiver, locFilter)"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/MainActivity.kt"
+            line="208"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.appcompat:appcompat than 1.6.1 is available: 1.7.1"
+        errorLine1="appcompat = &quot;1.6.1&quot;"
+        errorLine2="            ~~~~~~~">
+        <location
+            file="$HOME/AndroidStudioProjects/WalkSim/gradle/libs.versions.toml"
+            line="10"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of com.google.android.material:material than 1.10.0 is available: 1.13.0"
+        errorLine1="material = &quot;1.10.0&quot;"
+        errorLine2="           ~~~~~~~~">
+        <location
+            file="$HOME/AndroidStudioProjects/WalkSim/gradle/libs.versions.toml"
+            line="11"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.constraintlayout:constraintlayout than 2.1.4 is available: 2.2.1"
+        errorLine1="constraintlayout = &quot;2.1.4&quot;"
+        errorLine2="                   ~~~~~~~">
+        <location
+            file="$HOME/AndroidStudioProjects/WalkSim/gradle/libs.versions.toml"
+            line="13"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlin.android than 2.0.21 is available: 2.2.20"
+        errorLine1="kotlin = &quot;2.0.21&quot;"
+        errorLine2="         ~~~~~~~~">
+        <location
+            file="$HOME/AndroidStudioProjects/WalkSim/gradle/libs.versions.toml"
+            line="5"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="SimilarGradleDependency"
+        message="There are multiple dependencies com.google.android.material:material but with different version"
+        errorLine1="material = { group = &quot;com.google.android.material&quot;, name = &quot;material&quot;, version.ref = &quot;material&quot; }"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="$HOME/AndroidStudioProjects/WalkSim/gradle/libs.versions.toml"
+            line="27"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="SimilarGradleDependency"
+        message="There are multiple dependencies com.google.android.material:material but with different version"
+        errorLine1="material-v1130 = { module = &quot;com.google.android.material:material&quot;, version.ref = &quot;materialVersion&quot; }"
+        errorLine2="                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="$HOME/AndroidStudioProjects/WalkSim/gradle/libs.versions.toml"
+            line="30"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="UseCompatTextViewDrawableXml"
+        message="Use `app:drawableEndCompat` instead of `android:drawableEnd`"
+        errorLine1="        android:drawableEnd=&quot;@drawable/ic_steps&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_main.xml"
+            line="20"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseCompatTextViewDrawableXml"
+        message="Use `app:drawableTint` instead of `android:drawableTint`"
+        errorLine1="        android:drawableTint=&quot;?attr/colorPrimary&quot;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_main.xml"
+            line="22"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; `SDK_INT` is always >= 26"
+        errorLine1="        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/services/MockLocationService.kt"
+            line="66"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.black` appears to be unused"
+        errorLine1="    &lt;color name=&quot;black&quot;>#FF000000&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="3"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.white` appears to be unused"
+        errorLine1="    &lt;color name=&quot;white&quot;>#FFFFFFFF&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="4"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `Bitmap.toDrawable` instead?"
+        errorLine1="                icon = BitmapDrawable(context.resources, personBitmap)"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/ui/MapViewController.kt"
+            line="108"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `Bitmap.toDrawable` instead?"
+        errorLine1="                icon = BitmapDrawable(context.resources, personBitmap)"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/ui/MapViewController.kt"
+            line="108"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX function `createBitmap` instead?"
+        errorLine1="        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/ui/MapViewController.kt"
+            line="132"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        val editor = sharedPreferences.edit()"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/utils/StateManager.kt"
+            line="31"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        sharedPreferences.edit().putString(KEY_WALKED_PATH, pathJson).apply()"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/utils/StateManager.kt"
+            line="42"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `SharedPreferences.edit` instead?"
+        errorLine1="        val editor = sharedPreferences.edit()"
+        errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/utils/StateManager.kt"
+            line="46"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="SetTextI18n"
+        message="Do not concatenate text displayed with `setText`. Use resource string with placeholders."
+        errorLine1="        speedLabel.text = &quot;${value.toInt()} km/h&quot;"
+        errorLine2="                          ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/MainActivity.kt"
+            line="189"
+            column="27"/>
+    </issue>
+
+    <issue
+        id="SetTextI18n"
+        message="String literal in `setText` can not be translated. Use Android resources instead."
+        errorLine1="        speedLabel.text = &quot;${value.toInt()} km/h&quot;"
+        errorLine2="                                           ~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/MainActivity.kt"
+            line="189"
+            column="44"/>
+    </issue>
+
+    <issue
+        id="SetTextI18n"
+        message="String literal in `setText` can not be translated. Use Android resources instead."
+        errorLine1="            walkToggleButton.text = &quot;Stop Walk&quot;"
+        errorLine2="                                     ~~~~~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/managers/WalkSimulationManager.kt"
+            line="220"
+            column="38"/>
+    </issue>
+
+    <issue
+        id="SetTextI18n"
+        message="String literal in `setText` can not be translated. Use Android resources instead."
+        errorLine1="            walkToggleButton.text = &quot;Start Walk&quot;"
+        errorLine2="                                     ~~~~~~~~~~">
+        <location
+            file="src/main/java/com/dwinkley/walksim/managers/WalkSimulationManager.kt"
+            line="223"
+            column="38"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Generate Route From Markers&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;Generate Route From Markers&quot; />"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_main.xml"
+            line="47"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;5 km/h&quot;, should use `@string` resource"
+        errorLine1="                android:text=&quot;5 km/h&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_main.xml"
+            line="60"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="HardcodedText"
+        message="Hardcoded string &quot;Start Walk&quot;, should use `@string` resource"
+        errorLine1="            android:text=&quot;Start Walk&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/layout/activity_main.xml"
+            line="82"
+            column="13"/>
+    </issue>
+
+</issues>
