@@ -20,6 +20,7 @@ class RouteManager(
     private val context: Context,
     private val mapView: MapView,
 ) {
+
     private var road: Road? = null
     private var startPoint: GeoPoint? = null
     private var endPoint: GeoPoint? = null
@@ -30,6 +31,7 @@ class RouteManager(
     fun hasRoute(): Boolean = road != null
     fun hasStartAndEndPoints(): Boolean = startPoint != null && endPoint != null
     fun getCurrentRoad(): Road? = road
+    fun getRouteDistance(): Double = (road?.mLength ?: 0.0) * 1000
 
     fun addStartMarker(p: GeoPoint) {
         startPoint = p
@@ -40,7 +42,9 @@ class RouteManager(
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             title = "Start"
             isDraggable = true
-            val startIcon = ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)?.mutate()
+            val startIcon =
+                ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)
+                    ?.mutate()
             startIcon?.colorFilter = PorterDuffColorFilter(primaryColor, PorterDuff.Mode.SRC_IN)
             icon = startIcon
             setOnMarkerDragListener(object : Marker.OnMarkerDragListener {
@@ -48,6 +52,7 @@ class RouteManager(
                 override fun onMarkerDragEnd(marker: Marker) {
                     startPoint = marker.position
                 }
+
                 override fun onMarkerDragStart(marker: Marker) {}
             })
         }
@@ -58,13 +63,23 @@ class RouteManager(
     fun addEndMarker(p: GeoPoint) {
         endPoint = p
         endMarker?.let { mapView.overlays.remove(it) }
-        val tertiaryColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorTertiary, Color.RED)
+
+        val tertiaryColor = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorTertiary,
+            Color.RED
+        )
+
         endMarker = Marker(mapView).apply {
             position = p
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             title = "End"
             isDraggable = true
-            val endIcon = ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)?.mutate()
+
+            val endIcon =
+                ContextCompat.getDrawable(context, org.osmdroid.library.R.drawable.marker_default)
+                    ?.mutate()
+
             endIcon?.colorFilter = PorterDuffColorFilter(tertiaryColor, PorterDuff.Mode.SRC_IN)
             icon = endIcon
             setOnMarkerDragListener(object : Marker.OnMarkerDragListener {
@@ -72,6 +87,7 @@ class RouteManager(
                 override fun onMarkerDragEnd(marker: Marker) {
                     endPoint = marker.position
                 }
+
                 override fun onMarkerDragStart(marker: Marker) {}
             })
         }
@@ -89,7 +105,11 @@ class RouteManager(
             (context as? android.app.Activity)?.runOnUiThread {
                 road = newRoad
                 roadOverlay?.let { mapView.overlays.remove(it) }
-                val tertiaryColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorTertiary, Color.RED)
+                val tertiaryColor = MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorTertiary,
+                    Color.RED
+                )
 
                 if (road!!.mStatus == Road.STATUS_OK) {
                     roadOverlay = RoadManager.buildRoadOverlay(road, tertiaryColor, 15f)
@@ -116,7 +136,11 @@ class RouteManager(
             addEndMarker(restoredEndPoint)
         }
 
-        val tertiaryColor = MaterialColors.getColor(context, com.google.android.material.R.attr.colorTertiary, Color.RED)
+        val tertiaryColor = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorTertiary,
+            Color.RED
+        )
         roadOverlay = RoadManager.buildRoadOverlay(road, tertiaryColor, 15f)
         roadOverlay?.outlinePaint?.strokeCap = Paint.Cap.ROUND
         roadOverlay?.outlinePaint?.strokeJoin = Paint.Join.ROUND
@@ -125,7 +149,8 @@ class RouteManager(
 
     fun createDefaultMarkers(centerPoint: GeoPoint) {
         if (startMarker == null) {
-            val startGeoPoint = GeoPoint(centerPoint.latitude + 0.005, centerPoint.longitude - 0.005)
+            val startGeoPoint =
+                GeoPoint(centerPoint.latitude + 0.005, centerPoint.longitude - 0.005)
             val endGeoPoint = GeoPoint(centerPoint.latitude - 0.005, centerPoint.longitude + 0.005)
             addStartMarker(startGeoPoint)
             addEndMarker(endGeoPoint)

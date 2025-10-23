@@ -31,6 +31,7 @@ import com.dwinkley.walksim.ui.handlers.UIUpdateHandler
 import com.dwinkley.walksim.utils.BroadcastHelper
 import com.dwinkley.walksim.utils.PermissionHandler
 import com.dwinkley.walksim.utils.StateManager
+import com.dwinkley.walksim.utils.TimeUtils
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.slider.Slider
 import kotlinx.coroutines.launch
@@ -53,6 +54,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var speedLabel: TextView
     private lateinit var walkToggleButton: MaterialButton
     private lateinit var stepCountDisplay: TextView
+    private lateinit var remainingTimeDisplay: TextView
 
     private lateinit var healthConnectClient: HealthConnectClient
 
@@ -66,12 +68,25 @@ class MainActivity : AppCompatActivity() {
     private var pendingStepUpdateRunnable: Runnable? = null
     private var lastKnownStepCount = 0L
 
+    private val autoStopHandler = Handler(Looper.getMainLooper())
+    private var autoStopRunnable: Runnable? = null
+    private var isRemainingZero = false
+
     private val stepsUpdatedReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val stepCount = intent?.getLongExtra(BroadcastHelper.EXTRA_STEP_COUNT, -1L) ?: -1L
             if (stepCount >= 0) {
                 scheduleStepDisplayUpdate(stepCount)
             }
+        }
+    }
+
+    private val remainingTimeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val remainingDistance =
+                intent?.getDoubleExtra(BroadcastHelper.EXTRA_REMAINING_DISTANCE, 0.0) ?: 0.0
+            val speed = intent?.getFloatExtra(BroadcastHelper.EXTRA_SPEED, 0f) ?: 0f
+            updateRemainingTimeDisplay(remainingDistance, speed)
         }
     }
 
@@ -88,9 +103,11 @@ class MainActivity : AppCompatActivity() {
     ) { permissions ->
         lifecycleScope.launch {
             if (permissions.all { it.value }) {
+                stepCountDisplay.visibility = View.VISIBLE
                 loadInitialStepCount()
                 walkSimulationManager.onHealthConnectPermissionsGranted()
             } else {
+                stepCountDisplay.visibility = View.GONE
                 Toast.makeText(
                     this@MainActivity,
                     "Health Connect permissions not granted. Some features may be unavailable.",
@@ -118,12 +135,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun initializeComponents() {
         stateManager = StateManager(this)
-        uiUpdateHandler = UIUpdateHandler(this)
-
         mapView = findViewById(R.id.map)
         mapViewController = MapViewController(this, mapView)
 
         routeManager = RouteManager(this, mapView)
+        uiUpdateHandler = UIUpdateHandler(this, routeManager)
+
         locationManager = LocationManager(this, mapView, mapViewController)
         locationManager.routeManager = routeManager
 
@@ -149,6 +166,8 @@ class MainActivity : AppCompatActivity() {
         speedLabel = findViewById(R.id.speed_label)
         walkToggleButton = findViewById(R.id.walk_toggle_button)
         stepCountDisplay = findViewById(R.id.step_count_display)
+        remainingTimeDisplay = findViewById(R.id.remaining_time_display)
+
         val generateRouteButton = findViewById<Button>(R.id.generate_route_button)
 
         setupWalkToggleButton()
@@ -161,10 +180,16 @@ class MainActivity : AppCompatActivity() {
             if (walkSimulationManager.isWalking) {
                 walkSimulationManager.stopWalk()
                 locationManager.startRealLocationUpdates()
+                remainingTimeDisplay.visibility = View.GONE
+                cancelAutoStop()
             } else {
                 if (permissionHandler.checkPermissionsAndSettings() && routeManager.hasRoute()) {
                     locationManager.stopRealLocationUpdates()
-                    walkSimulationManager.startWalk(routeManager.getCurrentRoad()!!, speedSlider.value)
+                    walkSimulationManager.startWalk(
+                        routeManager.getCurrentRoad()!!,
+                        speedSlider.value
+                    )
+                    remainingTimeDisplay.visibility = View.VISIBLE
                 }
             }
         }
@@ -175,6 +200,7 @@ class MainActivity : AppCompatActivity() {
             if (routeManager.hasStartAndEndPoints()) {
                 routeManager.generateRoute { success ->
                     if (success) {
+                        uiUpdateHandler.updateSpeedLabel(speedLabel, speedSlider.value)
                         showWalkControls()
                     } else {
                         Toast.makeText(this, "Error generating route", Toast.LENGTH_SHORT).show()
@@ -200,6 +226,7 @@ class MainActivity : AppCompatActivity() {
         speedSlider.value = speed
         uiUpdateHandler.updateSpeedLabel(speedLabel, speed)
         showWalkControls()
+        remainingTimeDisplay.visibility = View.VISIBLE
 
         locationManager.disableMyLocationOverlay()
         mapView.invalidate()
@@ -228,6 +255,39 @@ class MainActivity : AppCompatActivity() {
         stepCountDisplay.text = formattedSteps
     }
 
+    private fun updateRemainingTimeDisplay(remainingDistance: Double, speed: Float) {
+        val remainingTime = TimeUtils.calculateEstimatedTime(speed, remainingDistance)
+        remainingTimeDisplay.text = "$remainingTime left"
+
+        val isZero =
+            remainingDistance <= 0.0
+        if (isZero && !isRemainingZero) {
+            isRemainingZero = true
+            scheduleAutoStop()
+        } else if (!isZero && isRemainingZero) {
+            isRemainingZero = false
+            cancelAutoStop()
+        }
+    }
+
+    private fun scheduleAutoStop() {
+        cancelAutoStop()
+        autoStopRunnable = Runnable {
+            if (walkSimulationManager.isWalking) {
+                walkSimulationManager.stopWalk()
+                locationManager.startRealLocationUpdates()
+                remainingTimeDisplay.visibility = View.GONE
+                Toast.makeText(this, "Walk completed", Toast.LENGTH_SHORT).show()
+            }
+        }
+        autoStopHandler.postDelayed(autoStopRunnable!!, 3000)
+    }
+
+    private fun cancelAutoStop() {
+        autoStopRunnable?.let { autoStopHandler.removeCallbacks(it) }
+        autoStopRunnable = null
+    }
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onResume() {
         super.onResume()
@@ -237,7 +297,10 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             if (hasAllHealthConnectPermissions()) {
+                stepCountDisplay.visibility = View.VISIBLE
                 loadInitialStepCount()
+            } else {
+                stepCountDisplay.visibility = View.GONE
             }
         }
     }
@@ -246,9 +309,11 @@ class MainActivity : AppCompatActivity() {
     private fun registerReceivers() {
         val locFilter = IntentFilter(BroadcastHelper.ACTION_LOCATION_UPDATE)
         val stepFilter = IntentFilter(BroadcastHelper.ACTION_STEPS_UPDATED)
+        val remainingTimeFilter = IntentFilter(BroadcastHelper.ACTION_REMAINING_TIME_UPDATE)
 
         registerReceiver(locationUpdateReceiver, locFilter, RECEIVER_EXPORTED)
         registerReceiver(stepsUpdatedReceiver, stepFilter, RECEIVER_NOT_EXPORTED)
+        registerReceiver(remainingTimeReceiver, remainingTimeFilter, RECEIVER_NOT_EXPORTED)
     }
 
     private fun handleResumeActions() {
@@ -264,9 +329,11 @@ class MainActivity : AppCompatActivity() {
         mapView.onPause()
         unregisterReceiver(locationUpdateReceiver)
         unregisterReceiver(stepsUpdatedReceiver)
+        unregisterReceiver(remainingTimeReceiver)
         locationManager.stopRealLocationUpdates()
 
         pendingStepUpdateRunnable?.let { stepUpdateHandler.removeCallbacks(it) }
+        cancelAutoStop()
     }
 
     private fun requestHealthConnectPermissionsIfNeeded() {
@@ -290,8 +357,10 @@ class MainActivity : AppCompatActivity() {
     private fun setupHealthConnect() {
         lifecycleScope.launch {
             if (hasAllHealthConnectPermissions()) {
+                stepCountDisplay.visibility = View.VISIBLE
                 loadInitialStepCount()
             } else {
+                stepCountDisplay.visibility = View.GONE
                 requestHealthConnectPermissions.launch(healthConnectPermissions.toTypedArray())
             }
         }

@@ -64,7 +64,12 @@ class HealthConnectManager(private val context: Context) {
                     metadata = metadata
                 )
                 healthConnectClient.insertRecords(listOf(stepsRecord))
-                Log.d(TAG, "Inserted $steps steps between ${start.toLocalTime()}–${end.toLocalTime()}")
+
+                Log.d(
+                    TAG,
+                    "Inserted $steps steps between ${start.toLocalTime()}â€“${end.toLocalTime()}"
+                )
+
                 onComplete?.invoke(true)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to insert step batch", e)

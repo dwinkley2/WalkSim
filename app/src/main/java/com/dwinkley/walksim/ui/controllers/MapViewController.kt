@@ -54,8 +54,16 @@ class MapViewController(
 
     private fun setupMyLocationOverlay() {
         myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), mapView)
-        val primaryColor = MaterialColors.getColor(context, android.R.attr.colorPrimary, ContextCompat.getColor(context, R.color.purple))
-        val personBitmap = getBitmapFromVectorDrawable(R.drawable.ic_person_pin, 50, 50, primaryColor)
+
+        val primaryColor = MaterialColors.getColor(
+            context,
+            android.R.attr.colorPrimary,
+            ContextCompat.getColor(context, R.color.purple)
+        )
+
+        val personBitmap =
+            getBitmapFromVectorDrawable(R.drawable.ic_person_pin, 50, 50, primaryColor)
+
         myLocationOverlay.setPersonIcon(personBitmap)
         myLocationOverlay.setDirectionArrow(personBitmap, personBitmap)
         myLocationOverlay.setPersonAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
@@ -65,7 +73,13 @@ class MapViewController(
 
     fun drawWalkedPath(points: List<GeoPoint>) {
         walkedPathOverlay?.let { mapView.overlays.remove(it) }
-        val primaryColor = MaterialColors.getColor(context, android.R.attr.colorPrimary, ContextCompat.getColor(context, R.color.purple))
+
+        val primaryColor = MaterialColors.getColor(
+            context,
+            android.R.attr.colorPrimary,
+            ContextCompat.getColor(context, R.color.purple)
+        )
+
         walkedPathOverlay = Polyline().apply {
             color = primaryColor
             outlinePaint.strokeWidth = 25f
@@ -88,7 +102,13 @@ class MapViewController(
 
     fun initializeWalkedPathOverlay() {
         walkedPathOverlay?.let { mapView.overlays.remove(it) }
-        val primaryColor = MaterialColors.getColor(context, android.R.attr.colorPrimary, ContextCompat.getColor(context, R.color.purple))
+
+        val primaryColor = MaterialColors.getColor(
+            context,
+            android.R.attr.colorPrimary,
+            ContextCompat.getColor(context, R.color.purple)
+        )
+
         walkedPathOverlay = Polyline().apply {
             color = primaryColor
             outlinePaint.strokeWidth = 25f
@@ -98,14 +118,28 @@ class MapViewController(
         mapView.overlays.add(walkedPathOverlay)
     }
 
-    fun updateMockLocationMarker(latitude: Double, longitude: Double, bearing: Float, isMoving: Boolean, isWalking: Boolean) {
+
+    fun updateMockLocationMarker(
+        latitude: Double,
+        longitude: Double,
+        bearing: Float,
+        isMoving: Boolean,
+        isWalking: Boolean
+    ) {
         val geoPoint = GeoPoint(latitude, longitude)
 
         if (mockLocationMarker == null) {
             if (!isWalking) return
 
-            val primaryColor = MaterialColors.getColor(context, android.R.attr.colorPrimary, ContextCompat.getColor(context, R.color.purple))
-            val personBitmap = getBitmapFromVectorDrawable(R.drawable.ic_person_pin, 50, 50, primaryColor)
+            val primaryColor = MaterialColors.getColor(
+                context,
+                android.R.attr.colorPrimary,
+                ContextCompat.getColor(context, R.color.purple)
+            )
+
+            val personBitmap =
+                getBitmapFromVectorDrawable(R.drawable.ic_person_pin, 50, 50, primaryColor)
+
             mockLocationMarker = Marker(mapView).apply {
                 icon = personBitmap?.toDrawable(context.resources)
                 setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)

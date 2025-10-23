@@ -104,6 +104,19 @@ class WalkSimulator(
         return WalkProgress(index, newDistance, bearing)
     }
 
+    fun getRemainingDistance(): Double {
+        if (progress.currentPointIndex >= config.route.size - 1) return 0.0
+
+        val currentSegmentRemaining =
+            config.route[progress.currentPointIndex].distanceToAsDouble(config.route[progress.currentPointIndex + 1]) - progress.distanceAlongSegment
+
+        var remaining = currentSegmentRemaining
+        for (i in progress.currentPointIndex + 1 until config.route.size - 1) {
+            remaining += config.route[i].distanceToAsDouble(config.route[i + 1])
+        }
+        return remaining
+    }
+
     fun stop() {
         executor?.shutdownNow()
         executor = null

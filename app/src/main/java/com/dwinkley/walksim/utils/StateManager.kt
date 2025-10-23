@@ -16,9 +16,10 @@ class StateManager(context: Context) {
     companion object {
         const val PREFS_NAME = "WalkSimPrefs"
         const val KEY_IS_WALKING = "isWalking"
-        const val KEY_ROUTE = "route"
         const val KEY_WALKED_PATH = "walkedPath"
         const val KEY_SPEED = "speed"
+
+        var currentRoute: ArrayList<GeoPoint>? = null
     }
 
     data class SavedWalkState(
@@ -30,8 +31,7 @@ class StateManager(context: Context) {
     fun saveWalkState(route: ArrayList<GeoPoint>, speed: Float) {
         val editor = sharedPreferences.edit()
         editor.putBoolean(KEY_IS_WALKING, true)
-        val routeJson = gson.toJson(route)
-        editor.putString(KEY_ROUTE, routeJson)
+        currentRoute = route
         editor.putFloat(KEY_SPEED, speed)
         editor.remove(KEY_WALKED_PATH)
         editor.apply()
@@ -45,7 +45,7 @@ class StateManager(context: Context) {
     fun clearWalkState() {
         val editor = sharedPreferences.edit()
         editor.putBoolean(KEY_IS_WALKING, false)
-        editor.remove(KEY_ROUTE)
+        currentRoute = null
         editor.remove(KEY_WALKED_PATH)
         editor.remove(KEY_SPEED)
         editor.apply()
@@ -55,12 +55,10 @@ class StateManager(context: Context) {
         val isWalking = sharedPreferences.getBoolean(KEY_IS_WALKING, false)
         if (!isWalking) return null
 
-        val routeJson = sharedPreferences.getString(KEY_ROUTE, null) ?: return null
+        val routePoints = currentRoute ?: return null
         val walkedPathJson = sharedPreferences.getString(KEY_WALKED_PATH, null)
         val speed = sharedPreferences.getFloat(KEY_SPEED, 5f)
 
-        val routeType = object : TypeToken<ArrayList<GeoPoint>>() {}.type
-        val routePoints: ArrayList<GeoPoint> = gson.fromJson(routeJson, routeType)
         val road = Road(routePoints)
 
         val walkedPath = if (walkedPathJson != null) {

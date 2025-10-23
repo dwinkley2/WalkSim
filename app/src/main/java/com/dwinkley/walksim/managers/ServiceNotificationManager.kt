@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import com.dwinkley.walksim.R
+import com.dwinkley.walksim.utils.TimeUtils
 
 class ServiceNotificationManager(private val context: Context) {
 
@@ -32,23 +33,43 @@ class ServiceNotificationManager(private val context: Context) {
         notificationManager.createNotificationChannel(channel)
     }
 
-    fun createNotification(totalSteps: Long): Notification {
-        val text = if (totalSteps > 0) {
+    fun createNotification(
+        totalSteps: Long,
+        remainingDistance: Double,
+        speed: Float
+    ): Notification {
+        val stepText = if (totalSteps > 0) {
             "Total Steps: ${formatStepCount(totalSteps)}"
+        } else {
+            ""
+        }
+
+        val timeText = if (remainingDistance > 0) {
+            val time = TimeUtils.calculateEstimatedTime(speed, remainingDistance)
+            " • Remaining: $time"
+        } else {
+            ""
+        }
+
+        val contentText = if (stepText.isNotEmpty() || timeText.isNotEmpty()) {
+            stepText + timeText
         } else {
             "Following route..."
         }
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle("Simulating Walk")
-            .setContentText(text)
+            .setContentText(contentText)
             .setSmallIcon(R.drawable.ic_notification)
             .setOngoing(true)
             .build()
     }
 
-    fun updateNotification(totalSteps: Long) {
-        notificationManager.notify(NOTIFICATION_ID, createNotification(totalSteps))
+    fun updateNotification(totalSteps: Long, remainingDistance: Double, speed: Float) {
+        notificationManager.notify(
+            NOTIFICATION_ID,
+            createNotification(totalSteps, remainingDistance, speed)
+        )
     }
 
     private fun formatStepCount(steps: Long): String {

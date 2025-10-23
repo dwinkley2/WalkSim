@@ -28,7 +28,18 @@
         android:shadowColor="#000000"
         android:shadowDx="1.5"
         android:shadowDy="1.3"
-        android:shadowRadius="1.6"/>
+        android:shadowRadius="1.6" />
+
+    <TextView
+        android:id="@+id/remaining_time_display"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/step_count_display"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+        android:visibility="gone"
+        tools:text="1h 12m left"
+        tools:visibility="visible" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -59,10 +70,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="5 km/h"
+                android:text="5 km/h • 1 h 23 min"
                 android:visibility="gone"
-                tools:visibility="visible"
-                />
+                tools:visibility="visible" />
 
             <com.google.android.material.slider.Slider
                 android:id="@+id/speed_slider"
@@ -83,7 +93,7 @@
             android:layout_marginTop="8dp"
             android:text="Start Walk"
             android:visibility="gone"
-            tools:visibility="visible"/>
+            tools:visibility="visible" />
 
     </LinearLayout>
 

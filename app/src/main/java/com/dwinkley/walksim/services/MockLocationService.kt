@@ -1,10 +1,7 @@
 package com.dwinkley.walksim.services
 
 import android.app.Service
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -45,20 +42,14 @@ class MockLocationService : Service() {
 
     private var pathHistory: ArrayList<GeoPoint> = ArrayList()
     private var lastBearing = 0f
-
-    private val historyRequestReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == BroadcastHelper.ACTION_REQUEST_PATH_HISTORY) {
-                sendPathHistoryUpdate()
-            }
-        }
-    }
+    private var speedKmh: Float = 0f
+    private var lastRemainingDistance: Double = 0.0
+    private var lastTotalSteps: Long = 0L
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate() {
         super.onCreate()
         initializeComponents()
-        setupBroadcastReceiver()
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -76,15 +67,9 @@ class MockLocationService : Service() {
         mockLocationProvider.setupTestProvider()
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private fun setupBroadcastReceiver() {
-        val filter = IntentFilter(BroadcastHelper.ACTION_REQUEST_PATH_HISTORY)
-        registerReceiver(historyRequestReceiver, filter, RECEIVER_EXPORTED)
-    }
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val route = intent?.getParcelableArrayListExtra<GeoPoint>("route")
-        val speedKmh = intent?.getFloatExtra("speed", 5.0f) ?: 5.0f
+        speedKmh = intent?.getFloatExtra("speed", 5.0f) ?: 5.0f
+        val route = StateManager.currentRoute
 
         if (route.isNullOrEmpty()) {
             Log.e(TAG, "Route is null or empty, stopping service.")
@@ -105,6 +90,7 @@ class MockLocationService : Service() {
 
         pathHistory.clear()
         stateManager.saveWalkState(route, speedKmh)
+        lastRemainingDistance = calculateFullRouteDistance(route)
         stepTracker.initialize(route.first())
 
         walkSimulator = WalkSimulator(
@@ -115,10 +101,18 @@ class MockLocationService : Service() {
 
         startForeground(
             ServiceNotificationManager.NOTIFICATION_ID,
-            notificationManager.createNotification(0)
+            notificationManager.createNotification(0L, lastRemainingDistance, speedKmh)
         )
 
         walkSimulator?.start()
+    }
+
+    private fun calculateFullRouteDistance(route: ArrayList<GeoPoint>): Double {
+        var dist = 0.0
+        for (i in 0 until route.size - 1) {
+            dist += route[i].distanceToAsDouble(route[i + 1])
+        }
+        return dist
     }
 
     private fun handleLocationUpdate(update: LocationUpdate) {
@@ -142,19 +136,9 @@ class MockLocationService : Service() {
             isMoving = update.isMoving,
             speed = update.speed
         )
-    }
 
-    private fun sendPathHistoryUpdate() {
-        val lastPoint = pathHistory.lastOrNull() ?: return
-        BroadcastHelper.sendLocationUpdate(
-            context = this,
-            latitude = lastPoint.latitude,
-            longitude = lastPoint.longitude,
-            bearing = lastBearing,
-            isMoving = true,
-            speed = 0f,
-            pathHistory = pathHistory
-        )
+        lastRemainingDistance = walkSimulator!!.getRemainingDistance()
+        notificationManager.updateNotification(lastTotalSteps, lastRemainingDistance, speedKmh)
     }
 
     private fun readTodayStepsAndUpdateNotification() {
@@ -165,19 +149,32 @@ class MockLocationService : Service() {
                 val response = healthConnectClient.aggregate(
                     AggregateRequest(
                         metrics = setOf(StepsRecord.COUNT_TOTAL),
-                        timeRangeFilter = TimeRangeFilter.between(start.toInstant(), end.toInstant())
+                        timeRangeFilter = TimeRangeFilter.between(
+                            start.toInstant(),
+                            end.toInstant()
+                        )
                     )
                 )
                 val healthSteps = response[StepsRecord.COUNT_TOTAL] ?: 0L
                 val currentSteps = stepTracker.getCurrentStats().totalSteps
                 val totalDisplaySteps = healthSteps + currentSteps
 
-                notificationManager.updateNotification(totalDisplaySteps)
+                lastTotalSteps = totalDisplaySteps
+                notificationManager.updateNotification(
+                    totalDisplaySteps,
+                    lastRemainingDistance,
+                    speedKmh
+                )
                 BroadcastHelper.sendStepUpdate(this@MockLocationService, totalDisplaySteps)
             } catch (e: Exception) {
                 Log.e(TAG, "Error reading Health Connect steps", e)
                 val currentSteps = stepTracker.getCurrentStats().totalSteps
-                notificationManager.updateNotification(currentSteps)
+                lastTotalSteps = currentSteps
+                notificationManager.updateNotification(
+                    currentSteps,
+                    lastRemainingDistance,
+                    speedKmh
+                )
                 BroadcastHelper.sendStepUpdate(this@MockLocationService, currentSteps)
             }
         }
@@ -189,7 +186,6 @@ class MockLocationService : Service() {
     }
 
     private fun cleanup() {
-        unregisterReceiver(historyRequestReceiver)
         walkSimulator?.stop()
 
         stepTracker.finalize {

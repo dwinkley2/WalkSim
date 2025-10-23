@@ -9,6 +9,7 @@ object BroadcastHelper {
     const val ACTION_LOCATION_UPDATE = "com.dwinkley.walksim.ACTION_LOCATION_UPDATE"
     const val ACTION_REQUEST_PATH_HISTORY = "com.dwinkley.walksim.ACTION_REQUEST_PATH_HISTORY"
     const val ACTION_STEPS_UPDATED = "com.dwinkley.walksim.ACTION_STEPS_UPDATED"
+    const val ACTION_REMAINING_TIME_UPDATE = "com.dwinkley.walksim.ACTION_REMAINING_TIME_UPDATE"
 
     const val EXTRA_LATITUDE = "latitude"
     const val EXTRA_LONGITUDE = "longitude"
@@ -17,6 +18,7 @@ object BroadcastHelper {
     const val EXTRA_SPEED = "speed"
     const val EXTRA_PATH_HISTORY = "pathHistory"
     const val EXTRA_STEP_COUNT = "stepCount"
+    const val EXTRA_REMAINING_DISTANCE = "remainingDistance"
 
     fun sendLocationUpdate(
         context: Context,
@@ -48,5 +50,14 @@ object BroadcastHelper {
 
     fun sendPathHistoryRequest(context: Context) {
         context.sendBroadcast(Intent(ACTION_REQUEST_PATH_HISTORY))
+    }
+
+    fun sendRemainingTimeUpdate(context: Context, remainingDistance: Double, speed: Float) {
+        val intent = Intent(ACTION_REMAINING_TIME_UPDATE).apply {
+            putExtra(EXTRA_REMAINING_DISTANCE, remainingDistance)
+            putExtra(EXTRA_SPEED, speed)
+            setPackage(context.packageName)
+        }
+        context.sendBroadcast(intent)
     }
 }
